@@ -51,8 +51,8 @@ Built using an **ESP32**, DropToPrint creates a seamless bridge between your com
 
 | Week          | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
 |---------------|---|---|---|---|---|---|---|---|---|----|
-| Planning & Hardware Setup    | ██████████ | ██████████ |             |             |             |             |             |             |             |     |
-| Core Firmware Development    |             |             | ██████████ | ██████████ | ██████████ |             |             |             |             |     |
+| Planning & Hardware Setup    | ██████████ | ██████████ | ██████████ |             |             |             |             |             |             |     |
+| Core Firmware Development    |             |             |  | ██████████ | ██████████ |             |             |             |             |     |
 | Integration & Testing        |             |             |             |             |             | ██████████ | ██████████ |             |             |     |
 | Advanced Features & Docs     |             |             |             |             |             |             |             | ██████████ | ██████████ |     |
 | Beta Testing & Finalizing    |             |             |             |             |             |             |             |             |             | ██████████ |
