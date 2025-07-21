@@ -47,12 +47,13 @@ Built using an **ESP32**, DropToPrint creates a seamless bridge between your com
 
 ---
 
-# Summary Timeline (10 Weeks)
+# DropToPrint Project Timeline — 10 Weeks Visual
 
-| Phase                      | Duration   | Timeline          |
-|----------------------------|------------|-------------------|
-| Planning & Hardware Setup  | 2 weeks    | Weeks 1-2         |
-| Core Firmware Development  | 3 weeks    | Weeks 3-5         |
-| Integration & Testing      | 2 weeks    | Weeks 6-7         |
-| Advanced Features & Docs   | 2 weeks    | Weeks 8-9         |
-| Beta Testing & Finalizing  | 1 week     | Week 10           |
+| Week          | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+|---------------|---|---|---|---|---|---|---|---|---|----|
+| Planning & Hardware Setup    | ██████████ | ██████████ |             |             |             |             |             |             |             |     |
+| Core Firmware Development    |             |             | ██████████ | ██████████ | ██████████ |             |             |             |             |     |
+| Integration & Testing        |             |             |             |             |             | ██████████ | ██████████ |             |             |     |
+| Advanced Features & Docs     |             |             |             |             |             |             |             | ██████████ | ██████████ |     |
+| Beta Testing & Finalizing    |             |             |             |             |             |             |             |             |             | ██████████ |
+
