@@ -58,7 +58,8 @@ Built using an **ESP32**, DropToPrint creates a seamless bridge between your com
 | Beta Testing & Finalizing    |             |             |             |             |             |             |             |             |             | ██████████ |
 
 
-<img src="https://github.com/user-attachments/assets/a7f6f09d-a7dc-4127-8ece-ec3ad1b3d1bd" width="300">()
+<img src="https://github.com/user-attachments/assets/ab32cf76-b077-4f57-8568-447d7590f274" width="300">
 
+<img src="https://github.com/user-attachments/assets/8a4cf397-ca2e-45a7-9264-221f681947d9" width="300">
 
 
