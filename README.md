@@ -8,60 +8,51 @@
 
 Built using an **ESP32**, DropToPrint creates a seamless bridge between your computer or phone and your printer.
 
----
+# DropToPrint Project Timeline (ESP32) — 10 Weeks
 
-## 🔧 Features
-
-### 📂 Wireless G-code File Transfer
-- Send `.gcode` files via Wi-Fi from any device
-- Files are written directly to the microSD card, readable by your printer
-
-### 🖥️ Remote Printer Control
-- Send G-code commands (e.g. `M105`, `G28`, `M112`) via a web UI
-- Interface with the printer’s serial port over UART
-
-### 🚫 No Firmware Modifications Required
-- Works out of the box with stock firmware
-- No need for OctoPrint, Klipper, or SD card swapping
+### Weeks 1-2: Planning, Design & Hardware Setup
+- Define feature scope and finalize ESP32 hardware selection  
+- Design system architecture (Wi-Fi → SD card → UART)  
+- Assemble prototype hardware: ESP32 + microSD + UART  
+- Test basic microSD read/write and UART communication
 
 ---
 
-## 🧠 Use Case Example
-
-1. Slice your model on PC or phone  
-2. Upload the G-code over Wi-Fi to the SD card  
-3. Start the print using the **web interface** — sends `M23` + `M24` via serial  
-4. Monitor and send commands (e.g. pause, home, stop)
-
----
-
-## 📦 Coming Soon
-- Real-time serial log display
-- Web G-code console 
-- Print queue manager
-- Secure authentication (optional)
+### Weeks 3-5: Core Firmware Development
+- Implement wireless G-code upload (Wi-Fi → microSD)  
+- Develop UART serial command interface for printer control  
+- Build basic web UI or REST API for uploading and sending commands  
+- Initial testing of upload and command functionalities
 
 ---
 
-## 🛠️ Hardware Requirements
-
-- ESP32
-- MicroSD slot (FAT32)
-- Connection to printer serial TX/RX (e.g., Creality mainboard)
-
----
-
-## 💡 Why DropToPrint?
-
-| Feature                     | DropToPrint | OctoPrint on Pi | SD Card Only |
-|----------------------------|-------------|------------------|--------------|
-| Wireless G-code Upload     | ✅          | ✅               | ❌           |
-| Remote Serial Control      | ✅          | ✅               | ❌           |
-| Uses Real SD Card          | ✅          | ❌               | ✅           |
-| No Firmware Mods Needed    | ✅          | ❌ (sometimes)    | ✅           |
-| Compact, Low-Power         | ✅          | ❌               | ✅           |
+### Weeks 6-7: Integration & Testing
+- End-to-end workflow testing: slicing → uploading → printing  
+- Validate file integrity and UART command reliability  
+- Debug and improve stability
 
 ---
 
-**DropToPrint is lightweight, open, and made for practical 3D printer users.**  
-Feedback, issues, and PRs are always welcome!
+### Weeks 8-9: Advanced Features & Documentation
+- Add real-time serial log display on web UI  
+- Develop web G-code console and temperature monitoring (basic)  
+- Write user guide, README, and setup instructions
+
+---
+
+### Week 10: Beta Testing & Final Touches
+- Release beta version for feedback  
+- Collect and address bugs or improvement requests  
+- Prepare for final release and package hardware/firmware
+
+---
+
+# Summary Timeline (10 Weeks)
+
+| Phase                      | Duration   | Timeline          |
+|----------------------------|------------|-------------------|
+| Planning & Hardware Setup  | 2 weeks    | Weeks 1-2         |
+| Core Firmware Development  | 3 weeks    | Weeks 3-5         |
+| Integration & Testing      | 2 weeks    | Weeks 6-7         |
+| Advanced Features & Docs   | 2 weeks    | Weeks 8-9         |
+| Beta Testing & Finalizing  | 1 week     | Week 10           |
