@@ -8,7 +8,7 @@
 
 Built using an **ESP32**, DropToPrint creates a seamless bridge between your computer or phone and your printer.
 
-# DropToPrint Project Timeline (ESP32) — 10 Weeks
+# DropToPrint Project Timeline — 10 Weeks
 
 ### Weeks 1-2: Planning, Design & Hardware Setup
 - Define feature scope and finalize ESP32 hardware selection  
