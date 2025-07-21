@@ -57,3 +57,8 @@ Built using an **ESP32**, DropToPrint creates a seamless bridge between your com
 | Advanced Features & Docs     |             |             |             |             |             |             |             | ██████████ | ██████████ |     |
 | Beta Testing & Finalizing    |             |             |             |             |             |             |             |             |             | ██████████ |
 
+
+![WhatsApp Image 2025-07-21 at 12 03 41](https://github.com/user-attachments/assets/a7f6f09d-a7dc-4127-8ece-ec3ad1b3d1bd)
+
+
+
