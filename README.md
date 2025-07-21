@@ -47,7 +47,7 @@ Built using an **ESP32**, DropToPrint creates a seamless bridge between your com
 
 - ESP32
 - MicroSD slot (FAT32)
-- Connection to printer serial TX/RX (e.g., Creality mainboard)
+- Connection to printer serial
 
 ---
 
