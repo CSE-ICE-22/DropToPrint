@@ -1,18 +1,6 @@
 # DropToPrint
 
-📂 Branch Descriptions
-firmware
-Contains all microcontroller code (ESP32 or Raspberry Pi Pico W) that handles:
 
-Writing uploaded G-code files to the SD card
-
-Communicating with the printer via UART/Serial
-
-Receiving commands or G-code via Wi-Fi (from the web interface)
-
-Optional OTA update logic
-
-This is the core logic that bridges wireless file transfer and serial printer control.
 
 **DropToPrint** is a compact, Wi-Fi-enabled hardware module designed for 3D printers like the Ender 3 V3 SE. It allows you to:
 
