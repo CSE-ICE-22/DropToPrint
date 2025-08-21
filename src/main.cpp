@@ -133,10 +133,10 @@ void handleSendToSerial() {
     webSocket.broadcastTXT("📤 Sending file: " + filename);
 
     while (file.available()) {
-        String line = file.readStringUntil('\n');
-        line.trim();
+    String line = file.readStringUntil('\n');
+    line.trim();
 
-        int commentIndex = line.indexOf(';');
+    int commentIndex = line.indexOf(';');
         if (commentIndex != -1) {
             line = line.substring(0, commentIndex);
             line.trim();
@@ -150,13 +150,36 @@ void handleSendToSerial() {
             unsigned long startTime = millis();
             String response = "";
 
-            while (millis() - startTime < 5000) {
+            while (millis() - startTime < 30000) {   // allow longer (30s) because some moves take time
                 while (Serial.available()) {
                     char c = Serial.read();
                     response += c;
-                    if (response.endsWith("ok\n") || response.endsWith("ok\r")) {
-                        webSocket.broadcastTXT("✅ Received: " + response);
-                        goto nextLine;
+
+                    // split lines
+                    if (c == '\n' || c == '\r') {
+                        response.trim();
+
+                        if (response.length() > 0) {
+                            if (response.startsWith("ok")) {
+                                webSocket.broadcastTXT("✅ Received: " + response + "\n");
+                                goto nextLine;   // proceed to next G-code
+                            }
+                            else if (response.startsWith("echo:busy")) {
+                                // keep waiting, but notify web client
+                                webSocket.broadcastTXT("⏳ Printer busy: " + response);
+                                // reset timer so it doesn’t timeout while still busy
+                                startTime = millis();
+                            }
+                            else if (response.startsWith("echo:")) {
+                                // informational message
+                                webSocket.broadcastTXT("💬 " + response);
+                            }
+                            else {
+                                // any other message (errors, temps, etc.)
+                                webSocket.broadcastTXT("📩 " + response);
+                            }
+                        }
+                        response = ""; // reset buffer for next line
                     }
                 }
             }
@@ -168,6 +191,7 @@ void handleSendToSerial() {
             continue;
         }
     }
+
 
     file.close();
     server.send(200, "text/plain", "✅ File sent to Serial");
