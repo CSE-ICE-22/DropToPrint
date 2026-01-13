@@ -9,6 +9,150 @@
 WebSocketsServer webSocket = WebSocketsServer(81);
 
 
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 32
+#define OLED_ADDR 0x3C
+
+// I2C pins for ESP32
+static const int OLED_SDA = 21;
+static const int OLED_SCL = 22;
+
+// Simple line buffer to keep last N log lines on the OLED
+static const uint8_t OLED_LINES = 4;
+static String oledLines[OLED_LINES];
+
+// OLED instance (no reset pin)
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+
+// Initialize the OLED — call this from setup()
+void initOLED() {
+    // Start I2C before display.begin()
+    Wire.begin(OLED_SDA, OLED_SCL, 100000);
+
+    if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDR)) {
+        Serial.println("SSD1306 init failed");
+        return;
+    }
+
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0, 0);
+    display.println("DropToPrint");
+    display.println("Initializing...");
+    display.display();
+
+    // clear internal buffer
+    for (uint8_t i = 0; i < OLED_LINES; ++i) oledLines[i] = "";
+}
+
+// Push a new log line to the OLED buffer and refresh display
+void oledPushLine(const String &line) {
+    // shift up
+    for (uint8_t i = 0; i < OLED_LINES - 1; ++i) {
+        oledLines[i] = oledLines[i + 1];
+    }
+    oledLines[OLED_LINES - 1] = line;
+    // update display
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    for (uint8_t i = 0; i < OLED_LINES; ++i) {
+        display.println(oledLines[i]);
+    }
+    display.display();
+}
+
+// Convenience: show WiFi IP and a short status line
+void oledShowIP(const String &line = "", const String &printingFile = "", int percent = -1) {
+    // Prepare display
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0, 0);
+
+    // Line 0: IP
+    String ip = WiFi.localIP().toString();
+    display.print("IP: ");
+    display.println(ip);
+
+    // Line 1: status line (optional)
+    if (line.length()) display.println(line);
+    else display.println();
+
+    // Line 2: printing file (with marquee if too long)
+    String fileLine = printingFile.length() ? String("File: ") + printingFile : "";
+    const int maxChars = 21; // approx characters per line at text size 1
+
+    static String lastFile = "";
+    static int offset = 0;
+    static unsigned long lastUpdate = 0;
+    const unsigned long periodMs = 300; // marquee speed
+
+    if (fileLine.length() == 0) {
+        display.println();
+    } else if ((int)fileLine.length() <= maxChars) {
+        display.println(fileLine);
+    } else {
+        // reset marquee when file changes
+        if (printingFile != lastFile) {
+            offset = 0;
+            lastUpdate = millis();
+            lastFile = printingFile;
+        }
+        unsigned long now = millis();
+        if (now - lastUpdate >= periodMs) {
+            lastUpdate = now;
+            offset++;
+        }
+        String padded = fileLine + "   ";
+        int totalLen = padded.length();
+        if (totalLen > 0) offset %= totalLen;
+
+        String visible;
+        visible.reserve(maxChars);
+        for (int i = 0; i < maxChars; ++i) {
+            int idx = (offset + i) % totalLen;
+            visible += padded.substring(idx, idx + 1);
+        }
+        display.println(visible);
+    }
+
+    // Line 3: progress bar + percentage
+    const int barX = 0;
+    const int barY = 24;              // bottom line (4th line: 0,8,16,24)
+    const int barW = SCREEN_WIDTH;    // full width
+    const int barH = 8;               // height of bar region
+
+    // draw outline
+    display.drawRect(barX, barY, barW, barH, SSD1306_WHITE);
+
+    // draw filled portion if percent provided
+    if (percent >= 0) {
+        if (percent < 0) percent = 0;
+        if (percent > 100) percent = 100;
+        int innerW = (barW - 2) * percent / 100; // leave 1px border
+        if (innerW > 0) display.fillRect(barX + 1, barY + 1, innerW, barH - 2, SSD1306_WHITE);
+
+        // percentage text inside bar (right side)
+        String pct = String(percent) + "%";
+        // place percentage with small right margin
+        int pctX = barX + barW - 1 - (pct.length() * 6) - 2; // approximate width per char = 6px
+        if (pctX < barX + 2) pctX = barX + 2;
+        display.setTextColor(SSD1306_BLACK, SSD1306_WHITE); // invert to keep readable on filled area
+        display.setCursor(pctX, barY + 1);
+        display.print(pct);
+        display.setTextColor(SSD1306_WHITE); // restore
+        display.setTextColor(SSD1306_WHITE, SSD1306_BLACK);
+    } else {
+        // no percent: optional small indicator or leave empty
+    }
+
+    display.display();
+}
 
 #define SD_CS 5
 
@@ -341,10 +485,79 @@ void handleSendToSerial() {
     Serial.printf("\n--- Sending file: %s ---\n", filename.c_str());
     webSocket.broadcastTXT("📤 Sending file: " + filename);
 
+    size_t totalSize = file.size();
+    String printingName = filename;
+    if (printingName.startsWith("/")) printingName = printingName.substring(1);
+
+    // Initial OLED update (0%)
+    // Clear OLED internal buffer and screen before starting send
+    for (uint8_t i = 0; i < OLED_LINES; ++i) oledLines[i] = "";
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.display();
+
+    oledShowIP("Printing...", printingName, 0);
+
+    // Track progress to minimize OLED refreshes (can be used later in the loop)
+    size_t lastPos = 0;
+    int lastPercent = -1;
+
+    // Count total number of lines in the opened file and store in totalLines
+    size_t totalLines = 0;
+    if (file) {
+        file.seek(0);
+        const size_t BUF_SZ = 128;
+        char buf[BUF_SZ];
+        while (file.available()) {
+            int n = file.readBytes(buf, BUF_SZ);
+            for (int i = 0; i < n; ++i) {
+                if (buf[i] == '\n') ++totalLines;
+            }
+        }
+
+        // If the file doesn't end with a newline, count the last line
+        if (file.size() > 0) {
+            file.seek(file.size() - 1);
+            char last = file.read();
+            if (last != '\n') ++totalLines;
+        }
+
+        // Rewind to start for the sending loop
+        file.seek(0);
+    } else {
+        totalLines = 0;
+    }
+
     while (file.available()) {
     String line = file.readStringUntil('\n');
     line.trim();
+    static size_t executedLines = 0;
 
+    // Predict whether this line will be sent (strip inline comment for the check)
+    String checkLine = line;
+    int semicolon = checkLine.indexOf(';');
+    if (semicolon != -1) {
+        checkLine = checkLine.substring(0, semicolon);
+        checkLine.trim();
+    }
+
+    if (checkLine.length() > 0) {
+        ++executedLines;
+
+        int percent = 0;
+        if (totalLines > 0) {
+            percent = (int)((executedLines * 100) / totalLines);
+            if (percent > 100) percent = 100;
+        } else {
+            percent = 100;
+        }
+
+        if (percent != lastPercent) {
+            lastPercent = percent;
+            oledShowIP("Sending...", printingName, percent);
+            webSocket.broadcastTXT("📊 Progress: " + String(percent) + "% (" + String(executedLines) + "/" + String(totalLines) + ")");
+        }
+    }
     int commentIndex = line.indexOf(';');
         if (commentIndex != -1) {
             line = line.substring(0, commentIndex);
@@ -411,6 +624,9 @@ void setup() {
     Serial.begin(115200);
     delay(1000);
 
+    initOLED();
+   
+
     WiFi.begin(ssid, password);
     Serial.print("Connecting to WiFi");
     while (WiFi.status() != WL_CONNECTED) {
@@ -420,6 +636,7 @@ void setup() {
     Serial.println();
     Serial.print("Connected! IP address: ");
     Serial.println(WiFi.localIP());
+    oledShowIP("Ready to print");
 
     if (!SD.begin(SD_CS)) {
         Serial.println("SD Card Mount Failed");
